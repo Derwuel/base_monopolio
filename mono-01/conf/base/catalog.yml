@@ -69,3 +69,9 @@ regressor:
   type: pickle.PickleDataset
   filepath: data/06_models/regressor.pickle
   versioned: true
+
+Base_clientes_Monopoly-0:
+  type: pandas.ExcelDataset
+  filepath: data/01_raw/Base_clientes_Monopoly-0.xlsx
+  load_args:
+    engine: openpyxl
