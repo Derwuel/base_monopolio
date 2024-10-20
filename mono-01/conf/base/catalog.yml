@@ -75,3 +75,7 @@ Base_clientes_Monopoly-0:
   filepath: data/01_raw/Base_clientes_Monopoly-0.xlsx
   load_args:
     engine: openpyxl
+
+pos_proceso:
+  type: pandas.ParquetDataset
+  filepath: data/02_intermediate/pos_proceso.pq
