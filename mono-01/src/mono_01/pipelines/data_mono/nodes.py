@@ -45,7 +45,7 @@ def imputar_datos(df_filtered: pd.DataFrame) -> pd.DataFrame:
                              'Internauta', 'Adicional', 'Dualidad', 'Monoproducto', 'Ctacte',
                              'Consumo', 'Hipotecario', 'Debito', 'CambioPin', 'Cuentas', 'TC']
     # Convertir las columnas seleccionadas a float32 para la imputación
-    df_filtered[columnas_para_imputar] = df_filtered[columnas_para_imputar].astype('float32', errors='ignore')
+    df_filtered[columnas_para_imputar] = df_filtered[columnas_para_imputar].astype('float32')
     # Configurar el imputador KNN con 5 vecinos
     imputer = KNNImputer(n_neighbors=5)
     # Realizar la imputación en las columnas seleccionadas
@@ -54,7 +54,7 @@ def imputar_datos(df_filtered: pd.DataFrame) -> pd.DataFrame:
     # Reemplazar las columnas imputadas en el DataFrame original filtrado
     df_filtered[columnas_para_imputar] = df_filtered_imputed
     # Convertir todas las columnas imputadas a int64
-    df_filtered[columnas_para_imputar] = df_filtered[columnas_para_imputar].astype('int64', errors='ignore')
+    df_filtered[columnas_para_imputar] = df_filtered[columnas_para_imputar].fillna(0).astype('int64')
     return df_filtered
 
 def pre_proceso(df: pd.DataFrame) -> pd.DataFrame:
