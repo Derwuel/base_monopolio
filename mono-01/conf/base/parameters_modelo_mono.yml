@@ -1,0 +1,26 @@
+# This is a boilerplate parameters config generated for pipeline 'modelo_mono'
+# using Kedro 0.19.9.
+#
+# Documentation for this file format can be found in "Parameters"
+# Link: https://docs.kedro.org/en/0.19.9/configuration/parameters.html
+
+model_options:
+  test_nume: 0.2
+  featrures01: 
+    - Id
+    - Subsegmento
+    - Sexo
+    - Region
+    - Edad
+    - Antiguedad
+    - Internauta
+    - Adicional
+    - Dualidad
+    - Monoproducto
+    - Ctacte
+    - Consumo
+    - Hipotecario
+    - Debito
+    - CambioPin
+    - Cuentas
+    - TC
