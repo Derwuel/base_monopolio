@@ -79,3 +79,8 @@ Base_clientes_Monopoly-0:
 pos_proceso:
   type: pandas.ParquetDataset
   filepath: data/02_intermediate/pos_proceso.pq
+
+resultado01:
+  type: pickle.PickleDataset
+  filepath: data/06_models/resultado01.pickle
+  versioned: true
