@@ -42,4 +42,4 @@ def mod_regrecion_lineal(X_train: pd.DataFrame, y_train: pd.Series) -> LinearReg
 def evaluacion_regrecion_lineal(regressor: LinearRegression, X_test: pd.DataFrame, y_test: pd.Series):
     y_pred = regressor.predict(X_test)
     r2 = r2_score(y_test, y_pred)
-    logger.info("este es el resultado de la evaluacion: ", r2)
+    logger.info("este es el resultado de la evaluacion: %s", r2)
