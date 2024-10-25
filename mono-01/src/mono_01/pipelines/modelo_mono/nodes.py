@@ -43,3 +43,20 @@ def evaluacion_regrecion_lineal(regressor: LinearRegression, X_test: pd.DataFram
     y_pred = regressor.predict(X_test)
     r2 = r2_score(y_test, y_pred)
     logger.info("este es el resultado de la evaluacion: %s", r2)
+
+def mod_arbol_decision(X_train: pd.DataFrame, y_train: pd.Series) -> DecisionTreeRegressor:
+    # Crear y ajustar el modelo de Árbol de Decisiones
+    model2 = DecisionTreeRegressor(random_state=42)
+    model2.fit(X_train, y_train)
+    return model2
+
+def evaluacion_arbol_decision(model: DecisionTreeRegressor, X_test: pd.DataFrame, y_test: pd.Series):
+    # Predecir con los datos de prueba
+    y_pred = model.predict(X_test)
+    # Calcular métricas
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    # Registrar resultados
+    logger.info("Mean Squared Error (MSE): %s", mse)
+    logger.info("R2 Score: %s", r2)
+    return mse, r2

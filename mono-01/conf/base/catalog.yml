@@ -84,3 +84,8 @@ resultado01:
   type: pickle.PickleDataset
   filepath: data/06_models/resultado01.pickle
   versioned: true
+
+tree_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/tree_model.pickle
+  versioned: true
