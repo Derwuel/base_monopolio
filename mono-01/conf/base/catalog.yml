@@ -95,16 +95,10 @@ svr_model:
   filepath: data/06_models/svr_model.pickle
 
 
-logistic_model:
+model_SGDClassifier:
   type: pickle.PickleDataset
-  filepath: data/06_models/logistic_model.pickle
+  filepath: data/06_models/model_SGDClassifier.pickle
 
-
-decision_tree_model:
+model_tree_clasicicacion:
   type: pickle.PickleDataset
-  filepath: data/06_models/decision_tree_model.pickle
-
-
-svc_model:
-  type: pickle.PickleDataset
-  filepath: data/06_models/svc_model.pickle
+  filepath: data/06_models/model_tree_clasicicacion.pickle

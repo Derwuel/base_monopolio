@@ -7,17 +7,9 @@
 model_options2:
   test_nume: 0.2
   featrures01: 
-    - Subsegmento
     - Sexo
     - Region
     - Edad
     - Antiguedad
-    - Internauta
-    - Adicional
-    - Dualidad
     - Monoproducto
     - Consumo
-    - Hipotecario
-    - Debito
-    - CambioPin
-    - Cuentas
