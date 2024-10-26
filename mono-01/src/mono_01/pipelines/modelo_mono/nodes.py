@@ -60,3 +60,20 @@ def evaluacion_arbol_decision(model: DecisionTreeRegressor, X_test: pd.DataFrame
     logger.info("Mean Squared Error (MSE): %s", mse)
     logger.info("R2 Score: %s", r2)
     return mse, r2
+
+def mod_svr(X_train: pd.DataFrame, y_train: pd.Series) -> SVR:
+    # Crear y ajustar el modelo de SVR
+    model3 = SVR(kernel='rbf')  # Puedes probar otros kernels como 'linear', 'poly', etc.
+    model3.fit(X_train, y_train)
+    return model3
+
+def evaluacion_svr(model3: SVR, X_test: pd.DataFrame, y_test: pd.Series):
+    # Predecir con los datos de prueba
+    y_pred = model3.predict(X_test)
+    # Calcular métricas
+    mse3 = mean_squared_error(y_test, y_pred)
+    r2_3 = r2_score(y_test, y_pred)
+    # Registrar resultados
+    logger.info("Mean Squared Error (MSE): %s", mse3)
+    logger.info("R2 Score: %s", r2_3)
+    return mse3, r2_3

@@ -7,7 +7,6 @@
 model_options:
   test_nume: 0.2
   featrures01: 
-    - Id
     - Subsegmento
     - Sexo
     - Region
@@ -17,10 +16,8 @@ model_options:
     - Adicional
     - Dualidad
     - Monoproducto
-    - Ctacte
     - Consumo
     - Hipotecario
     - Debito
     - CambioPin
     - Cuentas
-    - TC

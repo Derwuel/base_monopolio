@@ -89,3 +89,8 @@ tree_model:
   type: pickle.PickleDataset
   filepath: data/06_models/tree_model.pickle
   versioned: true
+
+svr_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/svr_model.pickle
+  versioned: true
