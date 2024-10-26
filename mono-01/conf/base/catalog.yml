@@ -83,14 +83,28 @@ pos_proceso:
 resultado01:
   type: pickle.PickleDataset
   filepath: data/06_models/resultado01.pickle
-  versioned: true
+
 
 tree_model:
   type: pickle.PickleDataset
   filepath: data/06_models/tree_model.pickle
-  versioned: true
+
 
 svr_model:
   type: pickle.PickleDataset
   filepath: data/06_models/svr_model.pickle
-  versioned: true
+
+
+logistic_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/logistic_model.pickle
+
+
+decision_tree_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/decision_tree_model.pickle
+
+
+svc_model:
+  type: pickle.PickleDataset
+  filepath: data/06_models/svc_model.pickle
