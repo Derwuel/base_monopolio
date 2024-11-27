@@ -30,6 +30,7 @@ from matplotlib import cm
 from sklearn.impute import KNNImputer
 from sklearn.decomposition import PCA
 from sklearn.linear_model import SGDClassifier
+from sklearn.cluster import KMeans
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,9 @@ logger = logging.getLogger(__name__)
 def split_data2(df: pd.DataFrame, parameters: t.Dict) -> t.Tuple:
     X = df[parameters["featrures01"]]
     y = df["Renta"]  # Asegúrate de que 'Renta' sea una variable categórica
+    kmeans = KMeans(n_clusters=3, random_state=42)
+    df['Cluster'] = kmeans.fit_predict(X)
+    X['Cluster'] = df['Cluster']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=parameters["test_nume"])
     return X_train, X_test, y_train, y_test
 

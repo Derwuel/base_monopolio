@@ -25,12 +25,16 @@ from sklearn.metrics import mean_squared_error, r2_score
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 from sklearn.impute import KNNImputer
+from sklearn.cluster import KMeans
 
 logger = logging.getLogger(__name__)
 
 def split_data(df: pd.DataFrame, parameters: t.Dict) -> t.Tuple:
     X = df[parameters["featrures01"]]
     y = df["Renta"]
+    kmeans = KMeans(n_clusters=3, random_state=42)
+    df['Cluster'] = kmeans.fit_predict(X)
+    X['Cluster'] = df['Cluster']
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=parameters["test_nume"])
     return X_train, X_test, y_train, y_test
 

@@ -1,1 +1,1 @@
-{"pos_proceso": {"rows": 51124, "columns": 18, "file_size": 846054}, "X_train_clasi": {"rows": 40899, "columns": 6}, "X_test_clasi": {"rows": 10225, "columns": 6}}
+{"pos_proceso": {"rows": 51124, "columns": 18, "file_size": 846054}, "X_train_clasi": {"rows": 40899, "columns": 7}, "X_test_clasi": {"rows": 10225, "columns": 7}}
