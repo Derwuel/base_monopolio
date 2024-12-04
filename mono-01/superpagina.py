@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pickle
 import os
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.model_selection import train_test_split
 
 # Configuración de la página
 st.set_page_config(
@@ -17,28 +19,36 @@ st.set_page_config(
 @st.cache_data
 def load_models(pickle_paths):
     """Cargar modelos desde archivos pickle."""
-    models_data = []
+    models = []
+    feature_names = None
     for path in pickle_paths:
         with open(path, "rb") as f:
-            model_data = pickle.load(f)
-            models_data.append(model_data)
-    return models_data
+            model = pickle.load(f)
+            models.append(model)
+            # Intentar cargar las características si están presentes
+            if hasattr(model, "feature_names_in_"):
+                feature_names = model.feature_names_in_
+    return models, feature_names
 
-# Función para preparar métricas de los modelos
-def prepare_metrics(models_data):
-    """Crear un DataFrame con las métricas de los modelos."""
+# Función para calcular métricas de los modelos
+def calculate_metrics(models, X_test, y_test):
+    """Calcular métricas para cada modelo."""
     metrics_list = []
-    for model in models_data:
+    for model in models:
         try:
+            # Realizar predicción
+            y_pred = model.predict(X_test)
+            y_pred_binary = (y_pred > 0.5).astype(int)  # Si es necesario binarizar las predicciones
+            # Calcular métricas
             metrics_list.append({
-                "Model": model.get("name", "Unknown"),
-                "Accuracy": model.get("accuracy", 0),
-                "Precision": model.get("precision", 0),
-                "Recall": model.get("recall", 0),
-                "F1-Score": model.get("f1_score", 0),
+                "Model": type(model).__name__,
+                "Accuracy": accuracy_score(y_test, y_pred_binary),
+                "Precision": precision_score(y_test, y_pred_binary, zero_division=0),
+                "Recall": recall_score(y_test, y_pred_binary, zero_division=0),
+                "F1-Score": f1_score(y_test, y_pred_binary, zero_division=0),
             })
         except Exception as e:
-            st.warning(f"No se pudieron extraer métricas: {e}")
+            st.warning(f"No se pudieron calcular métricas para el modelo {type(model).__name__}: {e}")
     return pd.DataFrame(metrics_list)
 
 # Función para preparar el perfil del cliente objetivo
@@ -48,43 +58,51 @@ def prepare_client_profile(df):
 
 # Ruta del archivo de datos
 data_file = "data/02_intermediate/pos_proceso.pq"
-csv_output_file = "data/02_intermediate/pos_proceso.csv"
 
-# Leer datos y convertir a CSV si es necesario
-if data_file.endswith(".pq"):
-    try:
-        df = pd.read_parquet(data_file)
-        # Guardar como CSV
-        os.makedirs(os.path.dirname(csv_output_file), exist_ok=True)
-        df.to_csv(csv_output_file, index=False)
-        st.info(f"Archivo Parquet convertido a CSV y guardado en: {csv_output_file}")
-    except Exception as e:
-        st.error(f"Error al leer o convertir el archivo Parquet: {e}")
-        df = pd.DataFrame()  # Crear un DataFrame vacío
-else:
-    try:
-        df = pd.read_csv(data_file)
-    except Exception as e:
-        st.error(f"Error al leer el archivo CSV: {e}")
-        df = pd.DataFrame()
-
-# Filtrar columnas requeridas
-columns_required = ["Sexo", "Región", "Edad", "Antigüedad", "Monoproducto", "Consumo"]
-missing_columns = [col for col in columns_required if col not in df.columns]
-if missing_columns:
-    st.warning(f"Las siguientes columnas faltan en los datos: {missing_columns}")
-else:
-    df = df[columns_required]
+# Leer datos y ajustar columnas requeridas
+try:
+    df = pd.read_parquet(data_file)
+    st.info("Archivo Parquet cargado correctamente.")
+    st.write("Columnas disponibles en el archivo:", df.columns.tolist())
+except Exception as e:
+    st.error(f"Error al cargar el archivo Parquet: {e}")
+    df = pd.DataFrame()
 
 # Preparar métricas y cliente objetivo si el DataFrame no está vacío
 if not df.empty:
+    # Cargar modelos desde archivos pickle
     pickle_files = [
         "data/06_models/tree_model.pickle",
         "data/06_models/resultado01.pickle",
         "data/06_models/svr_model.pickle",
     ]
-    models_data = load_models(pickle_files)
-    metrics = prepare_metrics(models_data)
+    models, feature_names = load_models(pickle_files)
+
+    # Alinear características con las usadas durante el entrenamiento
+    if feature_names is not None:
+        # Asegurar que solo las columnas necesarias estén presentes
+        missing_features = [col for col in feature_names if col not in df.columns]
+        extra_features = [col for col in df.columns if col not in feature_names]
+
+        # Agregar columnas faltantes con valores predeterminados
+        for col in missing_features:
+            df[col] = 0
+
+        # Eliminar columnas adicionales
+        df = df[feature_names]
+
+        st.write(f"Características alineadas con los modelos: {df.columns.tolist()}")
+
+    # Dividir datos para evaluar los modelos
+    # En este caso, `Sexo` es una característica, no la columna objetivo
+    X = df  # Usamos todo el DataFrame como `X`
+    y = df["Sexo"]  # Cambiar esto si otra columna es la variable objetivo
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    # Calcular métricas
+    metrics = calculate_metrics(models, X_test, y_test)
+
+    # Preparar perfil del cliente objetivo
     client_profile = prepare_client_profile(df)
 
     # Título de la aplicación
