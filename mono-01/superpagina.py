@@ -14,6 +14,84 @@ st.set_page_config(
     layout="wide",
 )
 
+# Estilos CSS personalizados
+custom_css = """
+<style>
+    /* General styling */
+    body {
+        background-color: #f9f9f9;
+        font-family: 'Arial', sans-serif;
+    }
+    .main-title {
+        text-align: center;
+        color: #4CAF50;
+        font-size: 36px;
+        margin-bottom: 20px;
+    }
+    .sub-title {
+        color: #4CAF50;
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    /* Layout adjustments */
+    .stColumn > div {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        height: auto !important;
+    }
+
+    /* Data table styling */
+    .stDataFrame {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Chart area */
+    .chart-container {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 10px;
+    }
+
+    /* Alert message styling */
+    .stAlert {
+        background-color: #e7f3e7;
+        color: #2e7d32;
+        border: 1px solid #a5d6a7;
+        border-radius: 8px;
+        padding: 10px;
+        font-weight: bold;
+    }
+
+    /* Radio buttons */
+    .stRadio > div {
+        display: flex;
+        justify-content: space-evenly;
+    }
+
+    /* Footer styling */
+    .footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #888;
+    }
+</style>
+"""
+
+# Incluir estilos personalizados en la página
+st.markdown(custom_css, unsafe_allow_html=True)
+
+# Título principal
+st.markdown("<div class='main-title'>Análisis de Datos</div>", unsafe_allow_html=True)
+
+# Dividir el diseño en dos columnas
+col1, col2 = st.columns([1, 2], gap="large")
+
 # Función para cargar modelos desde archivos pickle
 @st.cache_data
 def load_models(pickle_paths):
@@ -24,7 +102,6 @@ def load_models(pickle_paths):
         with open(path, "rb") as f:
             model = pickle.load(f)
             models.append(model)
-            # Intentar cargar las características si están presentes
             if hasattr(model, "feature_names_in_"):
                 feature_names = model.feature_names_in_
     return models, feature_names
@@ -35,10 +112,8 @@ def calculate_metrics(models, X_test, y_test):
     metrics_list = []
     for model in models:
         try:
-            # Realizar predicción
             y_pred = model.predict(X_test)
-            y_pred_binary = (y_pred > 0.5).astype(int)  # Si es necesario binarizar las predicciones
-            # Calcular métricas
+            y_pred_binary = (y_pred > 0.5).astype(int)
             metrics_list.append({
                 "Model": type(model).__name__,
                 "Accuracy": accuracy_score(y_test, y_pred_binary),
@@ -61,27 +136,19 @@ def prepare_client_profile(df):
         return profile
     except Exception as e:
         st.error(f"Error al preparar el perfil del cliente objetivo: {e}")
-        return pd.DataFrame()  # Retornar un DataFrame vacío en caso de error
+        return pd.DataFrame()
 
-# Ruta del archivo de datos
+# Leer datos desde un archivo (modifica la ruta si es necesario)
 data_file = "data/02_intermediate/pos_proceso.pq"
-
-# Leer datos y ajustar columnas requeridas
 try:
     df = pd.read_parquet(data_file)
-    st.info("Archivo Parquet cargado correctamente.")
-    st.write("Columnas disponibles en el archivo:", df.columns.tolist())
+    file_loaded_message = "Archivo Parquet cargado correctamente."
 except Exception as e:
-    st.error(f"Error al cargar el archivo Parquet: {e}")
     df = pd.DataFrame()
-
-# Inicialización de variables importantes
-client_profile = pd.DataFrame()
-metrics = pd.DataFrame()
+    file_loaded_message = f"Error al cargar el archivo Parquet: {e}"
 
 # Preparar métricas y cliente objetivo si el DataFrame no está vacío
 if not df.empty:
-    # Cargar modelos desde archivos pickle
     pickle_files = [
         "data/06_models/tree_model.pickle",
         "data/06_models/resultado01.pickle",
@@ -89,82 +156,72 @@ if not df.empty:
     ]
     models, feature_names = load_models(pickle_files)
 
-    # Alinear características con las usadas durante el entrenamiento
     if feature_names is not None:
-        # Asegurar que todas las características necesarias están presentes en el DataFrame
         missing_features = [col for col in feature_names if col not in df.columns]
         for col in missing_features:
-            df[col] = 0  # Agregar columnas faltantes con valores predeterminados
-
-        # Seleccionar solo las columnas necesarias para los modelos
+            df[col] = 0
         df = df[feature_names]
 
-        st.write(f"Características alineadas con los modelos: {df.columns.tolist()}")
-
-    # Dividir datos en X e y
     if "Sexo" in df.columns:
         y = df["Sexo"]
-        X = df  # No se elimina `Sexo` porque puede ser una característica usada
+        X = df
     else:
         y = pd.Series()
         X = df
 
-    # Dividir en conjuntos de entrenamiento y prueba
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # Calcular métricas
     metrics = calculate_metrics(models, X_test, y_test)
-
-    # Preparar perfil del cliente objetivo
     client_profile = prepare_client_profile(df)
-
-# Título de la aplicación
-st.title("📊 Resultados del Entrenamiento y Análisis del Cliente Objetivo")
-
-# Sección 1: Métricas de los modelos
-if not metrics.empty:
-    st.header("📈 Métricas de los Modelos Entrenados")
-    st.dataframe(metrics)
-
-    if st.checkbox("Mostrar gráfico de rendimiento de modelos"):
-        fig, ax = plt.subplots(figsize=(8, 4))
-        sns.barplot(data=metrics, x="Model", y="Accuracy", ax=ax, palette="viridis")
-        ax.set_title("Comparación de Precisión entre Modelos")
-        ax.set_ylabel("Precisión")
-        ax.set_xlabel("Modelo")
-        st.pyplot(fig)
-
-# Sección 2: Cliente objetivo
-if not client_profile.empty:
-    st.header("👤 Cliente Objetivo")
-    st.write("Características promedio del cliente objetivo:")
-    st.dataframe(client_profile)
-
-    if st.checkbox("Mostrar gráfico de distribución de características", key="dist_chart"):
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.barplot(data=client_profile, x="Value", y="Feature", ax=ax, palette="coolwarm")
-        ax.set_title("Distribución de Características del Cliente Objetivo")
-        ax.set_xlabel("Valor Promedio")
-        st.pyplot(fig)
 else:
-    st.warning("El perfil del cliente objetivo está vacío o no se pudo generar.")
+    metrics = pd.DataFrame()
+    client_profile = pd.DataFrame()
 
-# Gráfico de histograma para una característica clave
-if not df.empty:
-    if st.checkbox("Mostrar histograma de una característica clave", key="hist_chart"):
-        feature = st.selectbox("Selecciona una característica para el histograma", df.columns, key="feature_select_hist")
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.histplot(df[feature], kde=True, ax=ax, color="skyblue")
+# Cliente objetivo (columna izquierda)
+with col1:
+    st.markdown("<div class='sub-title'>Cliente Objetivo</div>", unsafe_allow_html=True)
+    if not client_profile.empty:
+        st.dataframe(client_profile, use_container_width=True)
+    else:
+        st.warning("El perfil del cliente objetivo está vacío o no se pudo generar.")
+
+# Visualización de gráficos (columna derecha)
+with col2:
+    st.markdown("<div class='sub-title'>Gráficos</div>", unsafe_allow_html=True)
+
+    # Botones de selección para gráficos
+    selected_graph = st.radio(
+        "Selecciona el tipo de gráfico:",
+        options=["Gráfico de distribución", "Histograma", "Gráfico de dispersión"],
+        horizontal=True
+    )
+
+    plot_area = st.empty()
+
+    if selected_graph == "Gráfico de distribución" and not client_profile.empty:
+        fig, ax = plt.subplots(figsize=(5, 4))  # Tamaño moderado del gráfico
+        sns.barplot(data=client_profile, x="Value", y="Feature", palette="coolwarm", ax=ax)
+        ax.set_title("Distribución de Características")
+        plot_area.pyplot(fig)
+
+    elif selected_graph == "Histograma" and not df.empty:
+        feature = st.selectbox("Selecciona una característica para el histograma", df.columns)
+        fig, ax = plt.subplots(figsize=(5, 4))  # Tamaño moderado del gráfico
+        sns.histplot(df[feature], kde=True, color="skyblue", ax=ax)
         ax.set_title(f"Histograma de {feature}")
-        ax.set_xlabel(feature)
-        st.pyplot(fig)
+        plot_area.pyplot(fig)
 
-# Gráfico de dispersión para dos características
-if not df.empty:
-    if st.checkbox("Mostrar gráfico de dispersión entre dos características", key="scatter_chart"):
-        x_feature = st.selectbox("Selecciona la característica del eje X", df.columns, key="x_feature_scatter")
-        y_feature = st.selectbox("Selecciona la característica del eje Y", df.columns, key="y_feature_scatter")
-        fig, ax = plt.subplots(figsize=(8, 6))
-        sns.scatterplot(data=df, x=x_feature, y=y_feature, ax=ax, color="green", alpha=0.7)
+    elif selected_graph == "Gráfico de dispersión" and not df.empty:
+        x_feature = st.selectbox("Eje X", df.columns)
+        y_feature = st.selectbox("Eje Y", df.columns)
+        fig, ax = plt.subplots(figsize=(5, 4))  # Tamaño moderado del gráfico
+        sns.scatterplot(data=df, x=x_feature, y=y_feature, color="green", alpha=0.7, ax=ax)
         ax.set_title(f"Dispersión entre {x_feature} y {y_feature}")
-        st.pyplot(fig)
+        plot_area.pyplot(fig)
+    else:
+        st.warning("No hay datos disponibles para mostrar este gráfico.")
+
+# Mostrar mensaje de carga del archivo después de los gráficos
+st.markdown(f"<div class='stAlert'>{file_loaded_message}</div>", unsafe_allow_html=True)
+
+# Pie de página
+st.markdown("<div class='footer'>© 2024 - Análisis de Datos</div>", unsafe_allow_html=True)
