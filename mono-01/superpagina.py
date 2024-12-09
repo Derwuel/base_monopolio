@@ -191,7 +191,7 @@ with col2:
     # Botones de selección para gráficos
     selected_graph = st.radio(
         "Selecciona el tipo de gráfico:",
-        options=["Gráfico de distribución", "Histograma", "Gráfico de dispersión"],
+        options=["Gráfico de distribución", "Histograma", "Gráfico de dispersión", "Datos del Cliente Aproximado"],
         horizontal=True
     )
 
@@ -217,6 +217,41 @@ with col2:
         sns.scatterplot(data=df, x=x_feature, y=y_feature, color="green", alpha=0.7, ax=ax)
         ax.set_title(f"Dispersión entre {x_feature} y {y_feature}")
         plot_area.pyplot(fig)
+
+    elif selected_graph == "Datos del Cliente Aproximado" and not df.empty:
+        st.markdown("<div class='sub-title'>Datos del Cliente Aproximado</div>", unsafe_allow_html=True)
+        try:
+            selected_features = ["Sexo", "Edad", "Internauta", "Consumo", "Hipotecario", "Debito"]
+            approx_data = df[selected_features].mean().round(2)
+
+            # Transformar el valor de Sexo
+            def transform_sexo(value):
+                if 1 < value < 2:
+                    return "Mujer"
+                elif value > 2:
+                    return "Hombre"
+                return "Indeterminado"
+
+            approx_data["Sexo"] = transform_sexo(approx_data["Sexo"])
+
+            # Calcular el porcentaje para Internauta
+            approx_data["Internauta"] = f"{(approx_data['Internauta'] * 100):.2f}%"
+
+            # Transformar el valor de Consumo
+            def transform_consumo(value):
+                if value > 0:
+                    return "Consume al menos un producto"
+                return "No consume productos"
+
+            approx_data["Consumo"] = transform_consumo(approx_data["Consumo"])
+
+            # Crear un DataFrame para mostrar
+            approx_data_table = approx_data.to_frame(name="Valor Aproximado").reset_index()
+            approx_data_table.rename(columns={"index": "Característica"}, inplace=True)
+            st.table(approx_data_table)
+        except KeyError as e:
+            st.error(f"Error: Alguna de las columnas seleccionadas no existe en los datos: {e}")
+
     else:
         st.warning("No hay datos disponibles para mostrar este gráfico.")
 
